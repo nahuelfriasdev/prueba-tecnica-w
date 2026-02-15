@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { LogoutButton } from "@/components/LogoutButton";
 
 export default async function DashboardLayout({
   children,
@@ -25,7 +25,7 @@ export default async function DashboardLayout({
             <span className="text-sm text-muted-foreground hidden md:block">
               {session.user.email}
             </span>
-            <Button variant="outline" size="sm" className="cursor-pointer">Cerrar Sesión</Button>
+            <LogoutButton />
           </div>
         </div>
       </header>
