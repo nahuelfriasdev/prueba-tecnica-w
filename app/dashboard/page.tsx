@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import CreateArticleForm from "@/components/CreateArticleForm";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import ArticleList from "@/components/ArticleList";
 
 export default async function DashboardPage() {
   const session = await auth.api.getSession({
@@ -39,7 +40,7 @@ export default async function DashboardPage() {
               <CardHeader className="pb-4">
                 <CardTitle className="text-xl font-bold">Crear Artículo</CardTitle>
                 <CardDescription>
-                  Comparte tus ideas con el resto del mundo. [cite: 30, 35]
+                  Comparte tus ideas con el resto del mundo.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -53,24 +54,10 @@ export default async function DashboardPage() {
               <h2 className="text-2xl font-bold tracking-tight text-slate-800">
                 Tus Publicaciones
               </h2>
-              <span className="text-xs font-bold uppercase tracking-widest text-slate-400 bg-slate-100 px-3 py-1 rounded-full">
-                Requisito: CRUD Autor [cite: 51, 52]
-              </span>
             </div>
+
+            <ArticleList />
             
-            <Card className="bg-slate-100/50 border-dashed border-2 border-slate-200 flex flex-col items-center justify-center p-20 transition-all hover:bg-slate-100/80">
-              <div className="bg-white p-4 rounded-full shadow-sm mb-4">
-                <svg className="w-8 h-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-              </div>
-              <div className="text-center">
-                <p className="text-slate-600 font-semibold">No hay artículos todavía</p>
-                <p className="text-sm text-slate-400 max-w-62.5 mx-auto">
-                  Usa el formulario de la izquierda para publicar tu primer contenido. [cite: 59, 60]
-                </p>
-              </div>
-            </Card>
           </section>
         </div>
       </div>
