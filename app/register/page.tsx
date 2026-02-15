@@ -22,7 +22,7 @@ export default function RegisterPage() {
     if (error) {
       alert("Error al registrar: " + error.message);
     } else {
-      // router.push("/dashboard");
+      router.push("/dashboard");
     }
   };
 

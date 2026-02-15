@@ -1,11 +1,11 @@
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
-import { articleRouter } from '@/server/routers/articles';
+import { appRouter } from '@/server/routers/articles';
 
 const handler = (req: Request) =>
   fetchRequestHandler({
     endpoint: '/api/trpc',
     req,
-    router: articleRouter,
+    router: appRouter,
     createContext: () => ({}), 
   });
 

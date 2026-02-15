@@ -9,4 +9,4 @@ export const articleSchema = z.object({
   createdAt: z.date().optional(),
 });
 
-export type Article = z.infer<typeof articleSchema>;
+export type ArticleInput = z.infer<typeof articleSchema>;
