@@ -4,12 +4,12 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge"; 
 import { ChevronLeft, ChevronRight, Calendar } from "lucide-react"; 
 import Image from "next/image";
 import { keepPreviousData } from "@tanstack/react-query";
+import { Article } from "@/types/article";
 
-export default function ArticleList() {
+export default function ArticleList({ onEdit }: { onEdit: (article: Article) => void }) {
   const [page, setPage] = useState(1);
   const limit = 5;
 
@@ -19,6 +19,13 @@ export default function ArticleList() {
       placeholderData: keepPreviousData
     }
   );
+
+  const utils = trpc.useUtils(); 
+  const deleteArticle = trpc.articles.delete.useMutation({
+    onSuccess: () => {
+      utils.articles.listMyArticles.invalidate(); 
+    }
+  });
 
   if (isLoading) {
     return <div className="space-y-4">Cargando tus artículos...</div>;
@@ -45,7 +52,7 @@ export default function ArticleList() {
   return (
     <div className="space-y-6">
       <div className="grid gap-4">
-        {data.articles.map((article: any) => (
+        {data.articles.map((article: Article) => (
           <Card key={article._id.toString()} className="overflow-hidden border-none shadow-sm hover:shadow-md transition-shadow bg-white">
             <div className="flex flex-col md:flex-row">
               <div className="md:w-48 h-32 md:h-auto relative bg-slate-100">
@@ -62,7 +69,31 @@ export default function ArticleList() {
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">
                     <CardTitle className="text-xl font-bold line-clamp-1">{article.title}</CardTitle>
-                    <Badge variant="secondary" className="text-[10px] uppercase">Borrador</Badge>
+                    <div className="flex gap-2"> 
+                      
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="cursor-pointer"
+                        onClick={() => onEdit(article)} 
+                      >
+                        Editar
+                      </Button>
+
+                      <Button 
+                        variant="destructive" 
+                        size="sm"
+                        className="cursor-pointer"
+                        disabled={deleteArticle.isPending}
+                        onClick={() => {
+                          if(confirm("¿Seguro quieres borrarlo?")) {
+                            deleteArticle.mutate({ id: article._id.toString() });
+                          }
+                        }}
+                      >
+                        {deleteArticle.isPending ? "Borrando..." : "Eliminar"}
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
