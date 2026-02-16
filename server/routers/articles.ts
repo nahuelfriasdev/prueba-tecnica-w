@@ -66,6 +66,26 @@ export const articleRouter = router({
         totalPages: Math.ceil(total / input.limit),
       };
     }),
+
+  listPublic: publicProcedure
+    .input(z.object({
+      page: z.number().default(1),
+      limit: z.number().default(10)
+    }))
+    .query(async ({ input }) => {
+      const client = await clientPromise;
+      const db = client.db("wortise");
+      const skip = (input.page - 1) * input.limit;
+
+      const articles = await db.collection('articles')
+        .find({}) 
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(input.limit)
+        .toArray();
+
+      return { articles };
+    }),
   
   update: publicProcedure
     .input(z.object({
@@ -113,6 +133,92 @@ export const articleRouter = router({
 
       return { success: true };
     }),
+
+  getById: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input }) => {
+      const client = await clientPromise;
+      const db = client.db("wortise");
+
+      const article = await db.collection('articles').findOne({ 
+        _id: new ObjectId(input.id) 
+      });
+
+      if (!article) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Artículo no encontrado" });
+      }
+
+      return article;
+    }),
+
+  getAuthors: publicProcedure
+  .query(async () => {
+    const client = await clientPromise;
+    const db = client.db("wortise");
+
+    const authorsData = await db.collection('articles').aggregate([
+      {
+        $group: {
+          _id: "$authorName", 
+          count: { $sum: 1 }, 
+        }
+      },
+      {
+        $project: {
+          _id: 0,              
+          name: "$_id",        
+          count: 1             
+        }
+      },
+      { $sort: { count: -1 } } 
+    ]).toArray();
+
+    return authorsData as { name: string; count: number }[];
+  }),
+
+  listByAuthor: publicProcedure
+    .input(z.object({ 
+      authorName: z.string(),
+      limit: z.number().default(10) 
+    }))
+    .query(async ({ input }) => {
+      const client = await clientPromise;
+      const db = client.db("wortise");
+
+      const articles = await db.collection('articles')
+        .find({ authorName: input.authorName })
+        .sort({ createdAt: -1 })
+        .limit(input.limit)
+        .toArray();
+
+      return { articles };
+    }),
+
+  search: publicProcedure
+  .input(z.object({ 
+    query: z.string().optional() 
+  }))
+  .query(async ({ input }) => {
+    const client = await clientPromise;
+    const db = client.db("wortise");
+
+    if (!input.query) return { articles: [] };
+
+    const searchRegex = new RegExp(input.query, 'i');
+
+    const articles = await db.collection('articles')
+      .find({
+        $or: [
+          { title: searchRegex },
+          { text: searchRegex },
+          { authorName: searchRegex }
+        ]
+      })
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    return { articles };
+  }),
 });
 
 export const appRouter = router({
