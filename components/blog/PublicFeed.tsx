@@ -84,15 +84,17 @@ export default function PublicFeed({ initialData }: PublicFeedProps) {
     <div className="flex flex-col gap-20">
       {featured && (
         <section>
-          <FeaturedArticle
-            title={featured.title}
-            text={featured.text}
-            coverImage={featured.coverImage}
-            authorName={featured.authorName || "Autor"}
-            date={new Date(featured.createdAt).toLocaleDateString()}
-            category="Novedad"
-            readTime="5 min"
-          />
+          <Link key={featured._id.toString()} href={`/blog/${featured._id.toString()}`}>
+            <FeaturedArticle
+              title={featured.title}
+              text={featured.text}
+              coverImage={featured.coverImage}
+              authorName={featured.authorName || "Autor"}
+              date={new Date(featured.createdAt).toLocaleDateString()}
+              category="Novedad"
+              readTime="5 min"
+            />
+          </Link>
         </section>
       )}
 
@@ -130,14 +132,16 @@ export default function PublicFeed({ initialData }: PublicFeedProps) {
           </div>
           <div className="border-t border-border">
             {archiveArticles.map((article) => (
-              <ArticleRow
-                key={article._id.toString()}
-                title={article.title}
-                authorName={article.authorName || "Autor"}
-                date={new Date(article.createdAt).toLocaleDateString()}
-                category="Legacy"
-                readTime="4 min"
-              />
+              <Link key={article._id.toString()} href={`/blog/${article._id.toString()}`}>
+                <ArticleRow
+                  key={article._id.toString()}
+                  title={article.title}
+                  authorName={article.authorName || "Autor"}
+                  date={new Date(article.createdAt).toLocaleDateString()}
+                  category="Legacy"
+                  readTime="4 min"
+                />
+              </Link>
             ))}
           </div>
         </section>

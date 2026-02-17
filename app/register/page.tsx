@@ -3,37 +3,26 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signUpSchema, SignUpInput } from "@/schemas/auth";
-import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import Link from "next/link";
 import { Loader2, UserPlus } from "lucide-react";
-import { useState } from "react";
+import { useRegister } from "@/hooks/use-register";
 
 export default function RegisterPage() {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  
+  const { handleRegister, isLoading } = useRegister();
   const { register, handleSubmit, formState: { errors } } = useForm<SignUpInput>({
     resolver: zodResolver(signUpSchema),
   });
 
   const onSubmit = async (data: SignUpInput) => {
-    setIsLoading(true);
-    const { error } = await authClient.signUp.email({
-      email: data.email,
-      password: data.password,
-      name: data.name,
-    });
-
-    if (error) {
-      alert("Error al registrar: " + error.message);
-      setIsLoading(false);
-    } else {
-      router.push("/dashboard");
+    try {
+      await handleRegister(data);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      alert(error.message);
     }
   };
 

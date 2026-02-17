@@ -2,92 +2,88 @@
 
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
-import { Card,CardTitle } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Edit3, Trash2 } from "lucide-react"; 
+import { Calendar, Edit3, Trash2, ChevronLeft, ChevronRight, Inbox } from "lucide-react"; 
 import Image from "next/image";
 import { keepPreviousData } from "@tanstack/react-query";
 import { Article } from "@/types/article";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ArticleList({ onEdit }: { onEdit: (article: Article) => void }) {
   const [page, setPage] = useState(1);
   const limit = 5;
+  const utils = trpc.useUtils();
 
- const { data, isLoading } = trpc.articles.listMyArticles.useQuery(
+  const { data, isLoading } = trpc.articles.listMyArticles.useQuery(
     { page, limit },
-    { 
-      placeholderData: keepPreviousData
-    }
+    { placeholderData: keepPreviousData }
   );
 
-  const utils = trpc.useUtils(); 
   const deleteArticle = trpc.articles.delete.useMutation({
-    onSuccess: () => {
-      utils.articles.listMyArticles.invalidate(); 
-    }
+    onMutate: async (deletedVars) => {
+      await utils.articles.listMyArticles.cancel();
+      const previousData = utils.articles.listMyArticles.getData({ page, limit });
+      utils.articles.listMyArticles.setData({ page, limit }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          articles: old.articles.filter((a) => a._id.toString() !== deletedVars.id),
+        };
+      });
+      return { previousData };
+    },
+    onError: (err, newVar, context) => {
+      utils.articles.listMyArticles.setData({ page, limit }, context?.previousData);
+      alert("Error al eliminar. Inténtalo de nuevo.");
+    },
+    onSettled: () => {
+      utils.articles.listMyArticles.invalidate();
+    },
   });
 
-  if (isLoading) {
-    return <div className="space-y-4">Cargando tus artículos...</div>;
-  }
+  if (isLoading) return <ArticleListSkeleton />;
 
-  if (!data?.articles.length) {
-    return (
-      <Card className="bg-slate-100/50 border-dashed border-2 border-slate-200 flex flex-col items-center justify-center p-20 transition-all hover:bg-slate-100/80">
-        <div className="bg-white p-4 rounded-full shadow-sm mb-4">
-          <svg className="w-8 h-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-        </div>
-        <div className="text-center">
-          <p className="text-slate-600 font-semibold">No hay artículos todavía</p>
-          <p className="text-sm text-slate-400 max-w-62.5 mx-auto">
-            Usa el formulario de la izquierda para publicar tu primer contenido. [cite: 59, 60]
-          </p>
-        </div>
-      </Card>
-    );
-  }
+  if (!data?.articles.length) return <EmptyState />;
 
   return (
     <div className="space-y-6">
       <div className="grid gap-6">
         {data.articles.map((article: Article) => (
-          <Card key={article._id.toString()} className="group overflow-hidden border border-slate-200 rounded-3xl bg-white shadow-none hover:shadow-xl transition-all duration-300 p-4">
+          <Card key={article._id.toString()} className="group overflow-hidden border-slate-100 rounded-[2rem] bg-white shadow-sm hover:shadow-2xl hover:shadow-slate-200 transition-all duration-500">
             <div className="flex flex-col md:flex-row">
-              
-              <div className="relative w-full md:w-56 h-62.5 md:h-auto shrink-0 overflow-hidden bg-slate-100">
+              <div className="relative w-full md:w-48 h-48 md:h-auto shrink-0 bg-slate-50">
                 <Image 
                   src={article.coverImage} 
                   alt={article.title}
                   fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
-                  sizes="(max-width: 768px) 100vw, 224px"
+                  className="object-cover transition-transform duration-700 group-hover:scale-110"
+                  sizes="(max-width: 768px) 100vw, 200px"
                 />
               </div>
               
-              <div className="flex flex-col flex-1 p-5 min-w-0 bg-white">
-                <div className="flex justify-between items-start gap-4 mb-3">
-                  <CardTitle className="text-lg md:text-xl font-black text-slate-800 leading-tight line-clamp-2">
+              <div className="flex flex-col flex-1 p-6">
+                <div className="flex justify-between items-start gap-4 mb-2">
+                  <CardTitle className="text-xl font-black text-slate-800 leading-tight">
                     {article.title}
                   </CardTitle>
                   
-                  <div className="flex gap-1 shrink-0">
+                  <div className="flex gap-2">
                     <Button 
                       variant="secondary" 
                       size="icon"
-                      className="rounded-full w-8 h-8"
+                      className="rounded-xl w-9 h-9 bg-slate-50 hover:bg-amber-50 hover:text-amber-600 transition-colors"
                       onClick={() => onEdit(article)} 
                     >
                       <Edit3 className="w-4 h-4" />
                     </Button>
                     <Button 
-                      variant="destructive" 
+                      variant="secondary" 
                       size="icon"
-                      className="rounded-full w-8 h-8"
+                      className="rounded-xl w-9 h-9 bg-slate-50 hover:bg-red-50 hover:text-red-600 transition-colors"
                       disabled={deleteArticle.isPending}
                       onClick={() => {
-                        if(confirm("¿Eliminar definitivamente?")) {
+                        if(confirm("¿Estás seguro de eliminar esta publicación?")) {
                           deleteArticle.mutate({ id: article._id.toString() });
                         }
                       }}
@@ -97,50 +93,75 @@ export default function ArticleList({ onEdit }: { onEdit: (article: Article) => 
                   </div>
                 </div>
                 
-                <p className="text-slate-500 text-sm line-clamp-3 mb-6">
+                <p className="text-slate-500 text-sm line-clamp-2 mb-6 font-medium">
                   {article.text}
                 </p>
 
-                <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
-                  <div className="flex items-center text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-wider gap-2">
+                <div className="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between">
+                  <div className="flex items-center text-slate-400 text-[10px] font-black uppercase tracking-[0.15em] gap-2">
                     <Calendar className="w-3.5 h-3.5" />
                     {new Date(article.createdAt).toLocaleDateString()}
                   </div>
-                  <span className="text-[10px] font-black uppercase px-2 py-1 bg-slate-100 text-slate-500 rounded-md">
-                    Publicado
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[10px] font-black uppercase text-slate-400">Live</span>
+                  </div>
                 </div>
               </div>
             </div>
           </Card>
-          ))}
+        ))}
       </div>
 
-      <div className="flex items-center justify-between pt-4">
-        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-          Pág. {page} / {data.totalPages}
+      <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-100">
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">
+          Página {page} de {data.totalPages}
         </p>
         <div className="flex gap-2">
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setPage((old) => Math.max(old - 1, 1))}
+            onClick={() => setPage((p) => Math.max(p - 1, 1))}
             disabled={page === 1}
-            className="rounded-full px-4 font-bold"
+            className="rounded-xl font-bold"
           >
-            Anterior
+            <ChevronLeft className="w-4 h-4 mr-1" /> Anterior
           </Button>
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
-            onClick={() => setPage((old) => old + 1)}
+            onClick={() => setPage((p) => p + 1)}
             disabled={page >= data.totalPages}
-            className="rounded-full px-4 border-slate-200 font-bold shadow-sm"
+            className="rounded-xl font-bold px-4"
           >
-            Siguiente
+            Siguiente <ChevronRight className="w-4 h-4 ml-1" />
           </Button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function ArticleListSkeleton() {
+  return (
+    <div className="space-y-6">
+      {[1, 2, 3].map((i) => (
+        <Skeleton key={i} className="h-48 w-full rounded-[2rem]" />
+      ))}
+    </div>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="bg-white border-2 border-dashed border-slate-100 rounded-[2.5rem] flex flex-col items-center justify-center p-20 text-center">
+      <div className="bg-slate-50 p-6 rounded-3xl mb-6">
+        <Inbox className="w-10 h-10 text-slate-200" />
+      </div>
+      <h3 className="text-xl font-black text-slate-800">No hay nada por aquí</h3>
+      <p className="text-slate-400 text-sm max-w-60 mt-2 font-medium">
+        Tus artículos aparecerán listados aquí una vez que los publiques.
+      </p>
     </div>
   );
 }

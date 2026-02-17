@@ -3,39 +3,27 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, LoginInput } from "@/schemas/auth";
-import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { useState } from "react";
 import { Loader2, LogIn } from "lucide-react";
+import { useAuthForm } from "@/hooks/use-auth-form";
 
 export default function LoginPage() {
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-
   const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = async (data: LoginInput) => {
-    setLoading(true);
-    
-    const { error } = await authClient.signIn.email({
-      email: data.email,
-      password: data.password,
-      callbackURL: "/dashboard", 
-    });
+  const { handleLogin, loading } = useAuthForm();
 
-    if (error) {
-      alert("Credenciales incorrectas: " + error.message);
-      setLoading(false);
-    } else {
-      router.push("/dashboard");
-      router.refresh(); 
+  const onSubmit = async (data: LoginInput) => {
+    try {
+      await handleLogin(data);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      alert(err.message);
     }
   };
 
