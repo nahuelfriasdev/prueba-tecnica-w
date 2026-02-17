@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { Suspense, useState } from "react"
-import { Menu, X } from "lucide-react"
+import { Feather, Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Search from "./Search"
 
@@ -50,18 +50,40 @@ export default function BlogHeader() {
       </div>
 
       {mobileOpen && (
-        <div className="border-t border-border bg-background px-6 py-6 md:hidden">
-          <nav className="flex flex-col gap-4">
-            <Link href="/authors" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-              Nuestros autores
-            </Link>
-            <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-              Acceso Autor
-            </Link>
-            <Button asChild className="mt-2 rounded-full bg-accent text-accent-foreground hover:bg-accent/90">
-              <Link href="/register">Empezar a escribir</Link>
-            </Button>
-          </nav>
+        <div className="absolute top-full left-0 right-0 border-b border-slate-100 bg-white p-6 shadow-2xl md:hidden animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="flex flex-col gap-8">
+            <div className="space-y-3">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Buscar contenido</p>
+              <Suspense fallback={<div className="w-full h-12 bg-slate-100 animate-pulse rounded-2xl" />}>
+                <Search />
+              </Suspense>
+            </div>
+
+            <nav className="flex flex-col gap-4">
+              <Link 
+                href="/authors" 
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 text-sm font-black uppercase tracking-widest text-slate-600 hover:bg-slate-100 transition-colors"
+              >
+                Nuestros autores
+              </Link>
+              
+              <Link 
+                href="/login" 
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 text-sm font-black uppercase tracking-widest text-slate-600 hover:bg-slate-100 transition-colors"
+              >
+                Acceso Autor
+              </Link>
+              
+              <Button asChild size="lg" className="mt-4 rounded-2xl bg-slate-900 text-white py-8 font-black uppercase tracking-widest text-xs">
+                <Link href="/register" onClick={() => setMobileOpen(false)}>
+                  <Feather className="w-4 h-4 mr-2" />
+                  Empezar a escribir
+                </Link>
+              </Button>
+            </nav>
+          </div>
         </div>
       )}
     </header>

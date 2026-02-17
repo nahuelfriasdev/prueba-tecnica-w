@@ -8,8 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { Loader2, LogIn } from "lucide-react";
+import { ChevronLeft, Loader2, LogIn } from "lucide-react";
 import { useAuthForm } from "@/hooks/use-auth-form";
+import BlogHeader from "@/components/blog/BlogHeader";
 
 export default function LoginPage() {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>({
@@ -29,8 +30,8 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-100 space-y-8">
-        
+        <BlogHeader />
+      <div className="w-full max-w-100 space-y-8 mt-15">
         <div className="text-center space-y-2">
           <h2 className="text-3xl font-black tracking-tighter uppercase italic">
             Wortise <span className="text-slate-400">CMS</span>

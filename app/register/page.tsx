@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import Link from "next/link";
 import { Loader2, UserPlus } from "lucide-react";
 import { useRegister } from "@/hooks/use-register";
+import BlogHeader from "@/components/blog/BlogHeader";
 
 export default function RegisterPage() {
   const { handleRegister, isLoading } = useRegister();
@@ -28,7 +29,8 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-100 space-y-8">
+      <BlogHeader />
+      <div className="w-full max-w-100 space-y-8 mt-15">
         
         <div className="text-center space-y-2">
           <h2 className="text-3xl font-black tracking-tighter uppercase italic">
