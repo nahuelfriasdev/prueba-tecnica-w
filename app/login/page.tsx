@@ -23,9 +23,11 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginInput) => {
     setLoading(true);
+    
     const { error } = await authClient.signIn.email({
       email: data.email,
       password: data.password,
+      callbackURL: "/dashboard", 
     });
 
     if (error) {
@@ -33,6 +35,7 @@ export default function LoginPage() {
       setLoading(false);
     } else {
       router.push("/dashboard");
+      router.refresh(); 
     }
   };
 
