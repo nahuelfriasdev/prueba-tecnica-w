@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card,CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Calendar } from "lucide-react"; 
+import { Calendar, Edit3, Trash2 } from "lucide-react"; 
 import Image from "next/image";
 import { keepPreviousData } from "@tanstack/react-query";
 import { Article } from "@/types/article";
@@ -51,88 +51,93 @@ export default function ArticleList({ onEdit }: { onEdit: (article: Article) => 
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4">
+      <div className="grid gap-6">
         {data.articles.map((article: Article) => (
-          <Card key={article._id.toString()} className="overflow-hidden border-none shadow-sm hover:shadow-md transition-shadow bg-white">
+          <Card key={article._id.toString()} className="group overflow-hidden border border-slate-200 rounded-3xl bg-white shadow-none hover:shadow-xl transition-all duration-300 p-4">
             <div className="flex flex-col md:flex-row">
-              <div className="md:w-48 h-32 md:h-auto relative bg-slate-100">
+              
+              <div className="relative w-full md:w-56 h-62.5 md:h-auto shrink-0 overflow-hidden bg-slate-100">
                 <Image 
                   src={article.coverImage} 
                   alt={article.title}
-                  className="object-cover w-full h-full"
-                  width={300}
-                  height={300}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  sizes="(max-width: 768px) 100vw, 224px"
                 />
               </div>
               
-              <div className="flex-1">
-                <CardHeader className="pb-2">
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="text-xl font-bold line-clamp-1">{article.title}</CardTitle>
-                    <div className="flex gap-2"> 
-                      
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        className="cursor-pointer"
-                        onClick={() => onEdit(article)} 
-                      >
-                        Editar
-                      </Button>
-
-                      <Button 
-                        variant="destructive" 
-                        size="sm"
-                        className="cursor-pointer"
-                        disabled={deleteArticle.isPending}
-                        onClick={() => {
-                          if(confirm("¿Seguro quieres borrarlo?")) {
-                            deleteArticle.mutate({ id: article._id.toString() });
-                          }
-                        }}
-                      >
-                        {deleteArticle.isPending ? "Borrando..." : "Eliminar"}
-                      </Button>
-                    </div>
+              <div className="flex flex-col flex-1 p-5 min-w-0 bg-white">
+                <div className="flex justify-between items-start gap-4 mb-3">
+                  <CardTitle className="text-lg md:text-xl font-black text-slate-800 leading-tight line-clamp-2">
+                    {article.title}
+                  </CardTitle>
+                  
+                  <div className="flex gap-1 shrink-0">
+                    <Button 
+                      variant="secondary" 
+                      size="icon"
+                      className="rounded-full w-8 h-8"
+                      onClick={() => onEdit(article)} 
+                    >
+                      <Edit3 className="w-4 h-4" />
+                    </Button>
+                    <Button 
+                      variant="destructive" 
+                      size="icon"
+                      className="rounded-full w-8 h-8"
+                      disabled={deleteArticle.isPending}
+                      onClick={() => {
+                        if(confirm("¿Eliminar definitivamente?")) {
+                          deleteArticle.mutate({ id: article._id.toString() });
+                        }
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-slate-600 text-sm line-clamp-2 mb-2">
-                    {article.text}
-                  </p>
-                  <div className="flex items-center text-slate-400 text-xs gap-2">
-                    <Calendar className="w-3 h-3" />
+                </div>
+                
+                <p className="text-slate-500 text-sm line-clamp-3 mb-6">
+                  {article.text}
+                </p>
+
+                <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
+                  <div className="flex items-center text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-wider gap-2">
+                    <Calendar className="w-3.5 h-3.5" />
                     {new Date(article.createdAt).toLocaleDateString()}
                   </div>
-                </CardContent>
+                  <span className="text-[10px] font-black uppercase px-2 py-1 bg-slate-100 text-slate-500 rounded-md">
+                    Publicado
+                  </span>
+                </div>
               </div>
             </div>
           </Card>
-        ))}
+          ))}
       </div>
 
-      <div className="flex items-center justify-between py-4 border-t border-slate-200">
-        <p className="text-sm text-slate-500 font-medium">
-          Página {page} de {data.totalPages}
+      <div className="flex items-center justify-between pt-4">
+        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+          Pág. {page} / {data.totalPages}
         </p>
         <div className="flex gap-2">
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={() => setPage((old) => Math.max(old - 1, 1))}
             disabled={page === 1}
-            className="cursor-pointer"
+            className="rounded-full px-4 font-bold"
           >
-            <ChevronLeft className="w-4 h-4 mr-1" /> Anterior
+            Anterior
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setPage((old) => old + 1)}
             disabled={page >= data.totalPages}
-            className="cursor-pointer"
+            className="rounded-full px-4 border-slate-200 font-bold shadow-sm"
           >
-            Siguiente <ChevronRight className="w-4 h-4 ml-1" />
+            Siguiente
           </Button>
         </div>
       </div>

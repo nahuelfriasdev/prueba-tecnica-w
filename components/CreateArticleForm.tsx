@@ -61,42 +61,58 @@ export default function CreateArticleForm({ editingArticle, onFinished }: Props)
   const isPending = createArticle.isPending || updateMutation.isPending;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <div className="space-y-2">
-        <Label htmlFor="title">Título del artículo</Label>
-        <Input id="title" {...register("title")} placeholder="Un título llamativo..." />
-        {errors.title && <p className="text-destructive text-sm">{errors.title.message}</p>}
+        <Label htmlFor="title" className="text-xs font-bold uppercase text-slate-500 ml-1">Título</Label>
+        <Input 
+          id="title" 
+          {...register("title")} 
+          placeholder="Ej: El futuro del CMS..." 
+          className="rounded-xl border-slate-200 focus:ring-primary"
+        />
+        {errors.title && <p className="text-destructive text-[10px] font-bold uppercase px-1">{errors.title.message}</p>}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="coverImage">URL de la imagen</Label>
-        <Input id="coverImage" {...register("coverImage")} placeholder="https://..." />
-        {errors.coverImage && <p className="text-destructive text-sm">{errors.coverImage.message}</p>}
+        <Label htmlFor="coverImage" className="text-xs font-bold uppercase text-slate-500 ml-1">Imagen de Portada (URL)</Label>
+        <Input 
+          id="coverImage" 
+          {...register("coverImage")} 
+          placeholder="https://images.unsplash.com/..." 
+          className="rounded-xl border-slate-200"
+        />
+        {errors.coverImage && <p className="text-destructive text-[10px] font-bold uppercase px-1">{errors.coverImage.message}</p>}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="text">Contenido</Label>
-        <Textarea id="text" {...register("text")} placeholder="¿De qué trata tu artículo?" className="min-h-37.5" />
-        {errors.text && <p className="text-destructive text-sm">{errors.text.message}</p>}
+        <Label htmlFor="text" className="text-xs font-bold uppercase text-slate-500 ml-1">Contenido</Label>
+        <Textarea 
+          id="text" 
+          {...register("text")} 
+          placeholder="Escribe aquí tu historia..." 
+          className="min-h-[200px] rounded-xl border-slate-200 resize-none" 
+        />
+        {errors.text && <p className="text-destructive text-[10px] font-bold uppercase px-1">{errors.text.message}</p>}
       </div>
 
-      <div className="flex gap-2">
-        <Button type="submit" className="flex-1" disabled={isPending}>
+      <div className="flex flex-col gap-2 pt-2">
+        <Button type="submit" className="w-full rounded-xl font-bold h-12 shadow-lg shadow-primary/20 transition-all hover:scale-[1.02]" disabled={isPending}>
           {isPending 
-            ? "Guardando..." 
-            : editingArticle ? "Guardar cambios" : "Publicar ahora"}
+            ? "Procesando..." 
+            : editingArticle ? "Actualizar Artículo" : "Publicar Ahora"}
         </Button>
 
         {editingArticle && (
           <Button 
             type="button" 
             variant="ghost" 
+            className="w-full rounded-xl text-slate-400"
             onClick={() => {
               reset({ title: "", text: "", coverImage: "" });
               onFinished();
             }}
           >
-            Cancelar
+            Descartar cambios
           </Button>
         )}
       </div>
