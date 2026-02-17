@@ -9,7 +9,13 @@ import Link from "next/link"
 import { Article } from "@/types/article"
 import { useSearchParams } from "next/navigation"
 
-export default function PublicFeed() {
+interface PublicFeedProps {
+  initialData?: {
+    articles: Article[];
+  }
+}
+
+export default function PublicFeed({ initialData }: PublicFeedProps) {
   const searchParams = useSearchParams()
   const searchQuery = searchParams.get("q") || ""
 
@@ -20,10 +26,14 @@ export default function PublicFeed() {
 
   const { data: listData, isLoading: isListing } = trpc.articles.listPublic.useQuery(
     { limit: 15 },
-    { enabled: searchQuery.length === 0 }
+    { 
+      enabled: searchQuery.length === 0,
+      initialData: searchQuery.length === 0 ? initialData : undefined, 
+      staleTime: 1000 * 60,
+    }
   )
 
-  const isLoading = isSearching || isListing
+  const isLoading = isSearching || (isListing && !initialData)
   if (isLoading) return <PublicFeedSkeleton />
 
   if (searchQuery) {
